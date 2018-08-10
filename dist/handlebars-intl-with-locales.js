@@ -2381,18 +2381,18 @@
     function $$utils$$extend(obj) {
         var sources = Array.prototype.slice.call(arguments, 1),
             i, len, source, key;
-
+    
         for (i = 0, len = sources.length; i < len; i += 1) {
             source = sources[i];
             if (!source) { continue; }
-
+    
             for (key in source) {
                 if (source.hasOwnProperty(key)) {
                     obj[key] = source[key];
                 }
             }
         }
-
+    
         return obj;
     }
 
@@ -2407,7 +2407,7 @@
         var SafeString  = Handlebars.SafeString,
             createFrame = Handlebars.createFrame,
             escape      = Handlebars.Utils.escapeExpression;
-
+    
         var helpers = {
             intl             : intl,
             intlGet          : intlGet,
@@ -2417,7 +2417,7 @@
             formatNumber     : formatNumber,
             formatMessage    : formatMessage,
             formatHTMLMessage: formatHTMLMessage,
-
+    
             // Deprecated helpers (renamed):
             intlDate       : deprecate('intlDate', formatDate),
             intlTime       : deprecate('intlTime', formatTime),
@@ -2425,53 +2425,53 @@
             intlMessage    : deprecate('intlMessage', formatMessage),
             intlHTMLMessage: deprecate('intlHTMLMessage', formatHTMLMessage)
         };
-
+    
         for (var name in helpers) {
             if (helpers.hasOwnProperty(name)) {
                 Handlebars.registerHelper(name, helpers[name]);
             }
         }
-
+    
         function deprecate(name, suggestion) {
             return function () {
                 if (typeof console !== 'undefined' &&
                     typeof console.warn === 'function') {
-
+    
                     console.warn(
                         '{{' + name + '}} is deprecated, use: ' +
                         '{{' + suggestion.name + '}}'
                     );
                 }
-
+    
                 return suggestion.apply(this, arguments);
             };
         }
-
+    
         // -- Helpers --------------------------------------------------------------
-
+    
         function intl(options) {
             /* jshint validthis:true */
-
+    
             if (!options.fn) {
                 throw new Error('{{#intl}} must be invoked as a block helper');
             }
-
+    
             // Create a new data frame linked the parent and create a new intl data
             // object and extend it with `options.data.intl` and `options.hash`.
             var data     = createFrame(options.data),
                 intlData = $$utils$$extend({}, data.intl, options.hash);
-
+    
             data.intl = intlData;
-
+    
             return options.fn(this, {data: data});
         }
-
+    
         function intlGet(path, options) {
             var intlData  = options.data && options.data.intl,
                 pathParts = path.split('.');
-
+    
             var obj, len, i;
-
+    
             // Use the path to walk the Intl data to find the object at the given
             // path, and throw a descriptive error if it's not found.
             try {
@@ -2483,84 +2483,84 @@
                     throw new ReferenceError('Could not find Intl object: ' + path);
                 }
             }
-
+    
             return obj;
         }
-
+    
         function formatDate(date, format, options) {
             date = new Date(date);
             assertIsDate(date, 'A date or timestamp must be provided to {{formatDate}}');
-
+    
             if (!options) {
                 options = format;
                 format  = null;
             }
-
+    
             var locales       = options.data.intl && options.data.intl.locales;
             var formatOptions = getFormatOptions('date', format, options);
-
+    
             return $$helpers$$getDateTimeFormat(locales, formatOptions).format(date);
         }
-
+    
         function formatTime(date, format, options) {
             date = new Date(date);
             assertIsDate(date, 'A date or timestamp must be provided to {{formatTime}}');
-
+    
             if (!options) {
                 options = format;
                 format  = null;
             }
-
+    
             var locales       = options.data.intl && options.data.intl.locales;
             var formatOptions = getFormatOptions('time', format, options);
-
+    
             return $$helpers$$getDateTimeFormat(locales, formatOptions).format(date);
         }
-
+    
         function formatRelative(date, format, options) {
             date = new Date(date);
             assertIsDate(date, 'A date or timestamp must be provided to {{formatRelative}}');
-
+    
             if (!options) {
                 options = format;
                 format  = null;
             }
-
+    
             var locales       = options.data.intl && options.data.intl.locales;
             var formatOptions = getFormatOptions('relative', format, options);
             var now           = options.hash.now;
-
+    
             // Remove `now` from the options passed to the `IntlRelativeFormat`
             // constructor, because it's only used when calling `format()`.
             delete formatOptions.now;
-
+    
             return $$helpers$$getRelativeFormat(locales, formatOptions).format(date, {
                 now: now
             });
         }
-
+    
         function formatNumber(num, format, options) {
             assertIsNumber(num, 'A number must be provided to {{formatNumber}}');
-
+    
             if (!options) {
                 options = format;
                 format  = null;
             }
-
+    
             var locales       = options.data.intl && options.data.intl.locales;
             var formatOptions = getFormatOptions('number', format, options);
-
+    
             return $$helpers$$getNumberFormat(locales, formatOptions).format(num);
         }
-
+    
         function formatMessage(message, options) {
             if (!options) {
                 options = message;
                 message = null;
             }
-
+    
             var hash = options.hash;
-
+    
             // TODO: remove support form `hash.intlName` once Handlebars bugs with
             // subexpressions are fixed.
             if (!(message || typeof message === 'string' || hash.intlName)) {
@@ -2568,58 +2568,58 @@
                     '{{formatMessage}} must be provided a message or intlName'
                 );
             }
-
+    
             var intlData = options.data.intl || {},
                 locales  = intlData.locales,
                 formats  = intlData.formats;
-
+    
             // Lookup message by path name. User must supply the full path to the
             // message on `options.data.intl`.
             if (!message && hash.intlName) {
                 message = intlGet(hash.intlName, options);
             }
-
+    
             // When `message` is a function, assume it's an IntlMessageFormat
             // instance's `format()` method passed by reference, and call it. This
             // is possible because its `this` will be pre-bound to the instance.
             if (typeof message === 'function') {
                 return message(hash);
             }
-
+    
             if (typeof message === 'string') {
                 message = $$helpers$$getMessageFormat(message, locales, formats);
             }
-
+    
             return message.format(hash);
         }
-
+    
         function formatHTMLMessage() {
             /* jshint validthis:true */
             var options = [].slice.call(arguments).pop(),
                 hash    = options.hash;
-
+    
             var key, value;
-
+    
             // Replace string properties in `options.hash` with HTML-escaped
             // strings.
             for (key in hash) {
                 if (hash.hasOwnProperty(key)) {
                     value = hash[key];
-
+    
                     // Escape string value.
                     if (typeof value === 'string') {
                         hash[key] = escape(value);
                     }
                 }
             }
-
+    
             // Return a Handlebars `SafeString`. This first unwraps the result to
             // make sure it's not returning a double-wrapped `SafeString`.
             return new SafeString(String(formatMessage.apply(this, arguments)));
         }
-
+    
         // -- Utilities ------------------------------------------------------------
-
+    
         function assertIsDate(date, errMsg) {
             // Determine if the `date` is valid by checking if it is finite, which
             // is the same way that `Intl.DateTimeFormat#format()` checks.
@@ -2627,27 +2627,27 @@
                 throw new TypeError(errMsg);
             }
         }
-
+    
         function assertIsNumber(num, errMsg) {
             if (typeof num !== 'number') {
                 throw new TypeError(errMsg);
             }
         }
-
+    
         function getFormatOptions(type, format, options) {
             var hash = options.hash;
             var formatOptions;
-
+    
             if (format) {
                 if (typeof format === 'string') {
                     formatOptions = intlGet('formats.' + type + '.' + format, options);
                 }
-
+    
                 formatOptions = $$utils$$extend({}, formatOptions, hash);
             } else {
                 formatOptions = hash;
             }
-
+    
             return formatOptions;
         }
     }
