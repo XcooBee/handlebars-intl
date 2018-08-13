@@ -165,15 +165,17 @@ describe('Helper `formatDate`', function () {
 
     // Use a fixed known date
     var dateStr   = 'Thu Jan 23 2014 18:00:44 GMT-0500 (EST)',
-        timeStamp = 1390518044403;
+        timeStamp = 1390518044403,
+        fixedDate = new Date(1390518044403),
+        fixedDateStr = "" + (fixedDate.getMonth()+1) + "/" + fixedDate.getDate() + "/" + fixedDate.getFullYear();
 
     it('should return a formatted string', function () {
         var tmpl = intlBlock('{{formatDate "' + dateStr + '"}}', {locales: 'en-US'});
-        expect(tmpl()).to.equal('1/23/2014');
+        expect(tmpl()).to.equal(fixedDateStr);
 
         // note timestamp is passed as a number
         tmpl = intlBlock('{{formatDate ' + timeStamp + '}}', {locales: 'en-US'});
-        expect(tmpl()).to.equal('1/23/2014');
+        expect(tmpl()).to.equal(fixedDateStr);
     });
 
     it('should return a formatted string of just the time', function () {
@@ -204,15 +206,17 @@ describe('Helper `formatTime`', function () {
 
     // Use a fixed known date
     var dateStr   = 'Thu Jan 23 2014 18:00:44 GMT-0500 (EST)',
-        timeStamp = 1390518044403;
+        timeStamp = 1390518044403,
+        fixedDate = new Date(1390518044403),
+        fixedDateStr = "" + (fixedDate.getMonth()+1) + "/" + fixedDate.getDate() + "/" + fixedDate.getFullYear();
 
     it('should return a formatted string', function () {
         var tmpl = intlBlock('{{formatTime "' + dateStr + '"}}', {locales: 'en-US'});
-        expect(tmpl()).to.equal('1/23/2014');
+        expect(tmpl()).to.equal(fixedDateStr);
 
         // note timestamp is passed as a number
         tmpl = intlBlock('{{formatTime ' + timeStamp + '}}', {locales: 'en-US'});
-        expect(tmpl()).to.equal('1/23/2014');
+        expect(tmpl()).to.equal(fixedDateStr);
     });
 
     it('should return a formatted string of just the time', function () {
@@ -392,8 +396,11 @@ describe('Helper `intl`', function () {
                     PRICE: 40000.004,
                     DEADLINE: timeStamp,
                     TZ: 'UTC'
-                };
-            expect(Handlebars.compile(tmpl)(ctx)).to.equal("oranges cost $40,000.00 (or €40,000.00) if ordered by January 23, 2014");
+                },
+                fixedDate = new Date(timeStamp),
+                fixedDateStr = "" + fixedDate.getDate() + ", " + fixedDate.getFullYear();
+
+            expect(Handlebars.compile(tmpl)(ctx)).to.equal("oranges cost $40,000.00 (or €40,000.00) if ordered by January " + fixedDateStr);
         });
     });
 });
