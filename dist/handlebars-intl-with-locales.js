@@ -2475,9 +2475,14 @@
             // Use the path to walk the Intl data to find the object at the given
             // path, and throw a descriptive error if it's not found.
             try {
-                for (i = 0, len = pathParts.length; i < len; i++) {
-                    obj = intlData = intlData[pathParts[i]];
+                if (pathParts[0] === "formats") {
+                    for (i = 0, len = pathParts.length; i < len; i++) {
+                        obj = intlData = intlData[pathParts[i]];
+                    }
+                } else {
+                    obj = intlData[path];
                 }
+    
             } finally {
                 if (obj === undefined) {
                     throw new ReferenceError('Could not find Intl object: ' + path);
